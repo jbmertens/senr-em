@@ -1,0 +1,67 @@
+<!DOCTYPE>
+<html>
+<head>
+  <script type="text/javascript" src="SENR.js"></script>
+  <script
+    src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+    integrity="sha256-3edrmyuQ0w65f8gfBsqowzjJe2iM6n0nKciPUp8y+7E="
+    crossorigin="anonymous"></script>
+  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+  
+</head>
+<body>
+  <script type="text/javascript">
+    function IDX (g, i, j, k)
+    {
+      var NGHOSTS = 3;
+      var Npts1 = 128+2*NGHOSTS;
+      var Npts2 = 32+2*NGHOSTS;
+      var Npts3 = 2+2*NGHOSTS;
+      return (i+NGHOSTS) + Npts1*( (j+NGHOSTS) + Npts2*( (k+NGHOSTS) + Npts3*g ) )
+    }
+
+    function get_sub_arr(gfs_arr, g)
+    {
+      var nx = 128;
+      var ny = 32;
+      var nz = 2;
+
+      var sub_arr = new Array(ny);
+      for (var j=0; j<ny; j++) {
+        sub_arr[j] = new Array(nx);
+        for (var i=0; i<nx; i++) {
+          var k = 0;
+          sub_arr[j][i] = gfs_arr[IDX(g,i,j,k)];
+        }
+      }
+
+      return sub_arr;
+    }
+
+    function plot_data(steps, g)
+    {
+      // Initialize GR sim
+      _init_sim();
+      // Run 1 step
+      _run_sim(steps);
+
+      // get gfs data
+      var gfs_ptr_F64 = _get_gfs()/8;
+      var gfs_size = _get_gfs_size();
+      var gfs_arr = HEAPF64.subarray( gfs_ptr_F64, gfs_ptr_F64 + gfs_size );
+
+
+      var data = [
+        {
+          z: get_sub_arr(gfs_arr, g),
+          type: 'heatmap'
+        }
+      ];
+      Plotly.newPlot('display', data);
+    }
+
+  </script>
+  <div id="display"></div>
+</body>
+
+</html>
