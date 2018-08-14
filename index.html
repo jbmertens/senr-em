@@ -10,7 +10,25 @@
   
 </head>
 <body>
+  <fieldset>
+    # Steps:
+    <span id="sim_steps_indicator">10</span>
+    <input type="range" min="1" max="100" value="10" class="slider" id="sim_steps" onchange="javascript:$('#sim_steps_indicator').text(this.value);">
+    <button onclick="javascript:prep_sim();">Run Sim!</button>
+  </fieldset>
+  <fieldset>
+    # Steps:
+    <span id="field_num_indicator">7</span>
+    <input type="range" min="0" max="23" value="7" class="slider" id="field_num" onchange="javascript:$('#field_num_indicator').text(this.value);">
+    <button onclick="javascript:plot_sim_data();">Plot field!</button>
+  </fieldset>
   <script type="text/javascript">
+    function prep_sim()
+    {
+      var steps = $('#sim_steps').val();
+      run_sim(steps);
+    }
+
     function IDX (g, i, j, k)
     {
       var NGHOSTS = 3;
@@ -38,23 +56,27 @@
       return sub_arr;
     }
 
-    function plot_data(steps, g)
+    function run_sim(steps)
     {
       // Initialize GR sim
       _init_sim();
       // Run 1 step
       _run_sim(steps);
+    }
+
+    function plot_sim_data()
+    {
+      var g = $('#field_num').val();
 
       // get gfs data
       var gfs_ptr_F64 = _get_gfs()/8;
       var gfs_size = _get_gfs_size();
       var gfs_arr = HEAPF64.subarray( gfs_ptr_F64, gfs_ptr_F64 + gfs_size );
 
-
       var data = [
         {
           z: get_sub_arr(gfs_arr, g),
-          type: 'heatmap'
+          type: 'heatmapgl'
         }
       ];
       Plotly.newPlot('display', data);
