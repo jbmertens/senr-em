@@ -23,11 +23,11 @@
   </div>
   <div id="display"></div>
   <script type="text/javascript">
+    // Declare Module with onRuntimeInitialized before including SENR.js.
+    // Per: https://kripken.github.io/emscripten-site/docs/getting_started/FAQ.html#how-can-i-tell-when-the-page-is-fully-loaded-and-it-is-safe-to-call-compiled-functions
     var Module = { onRuntimeInitialized: function() {
       $( document ).ready( function() {
-        // ...
         var senr_sim = new SENRSimulation();
-
       });
     }};
   </script>

@@ -37,7 +37,7 @@ class SENRSimulation
       { val: 22, text: "betU1"} ,
       { val: 23, text: "betU2"} ,
     ];
-    self.fieldPlotted = 1;
+    self.fieldPlotted = 0;
 
     $('#control #play').on('click', function() {
       console.log("Setting simulation to running.");
@@ -62,7 +62,7 @@ class SENRSimulation
 
     Module._init_sim();
     Module._run_sim(1);
-    self.showPlot(1);
+    self.showPlot(self.fieldPlotted);
     self.runSim();
   }
 
@@ -89,19 +89,67 @@ class SENRSimulation
   showPlot(g)
   {
     var self = this;
-    var data = [
-      {
-        z: get_sub_arr(g),
-        type: 'heatmapgl'
+    var arr = get_SENR_arrays(g);
+
+    var data = [{
+      x: arr['x'],
+      y: arr['y'],
+      a: arr['a'],
+      b: arr['b'],
+      type: 'carpet',
+      aaxis: {
+        smoothing: 0,
+        minorgridcount: 9,
+        type: 'linear',
+        showticklabels: "none",
+        showgrid: false,
+      },
+      baxis: {
+        smoothing: 0,
+        minorgridcount: 9,
+        type: 'linear',
+        showticklabels: "none",
+        showgrid: false,
       }
-    ];
-    Plotly.newPlot('display', data);
+    }, {
+      z: arr['z'],
+      a: arr['a'],
+      b: arr['b'],
+      type: 'contourcarpet',
+    }];
+
+    var layout = {
+        yaxis: {
+          zeroline: false,
+          showgrid: false,
+          autorange: true,
+          showline: false,
+          ticks: '',
+          showticklabels: false,
+        },
+        xaxis: {
+          scaleratio: 1,
+          scaleanchor: "y",
+          showgrid: false,
+          autorange: true,
+          showline: false,
+          ticks: '',
+          showticklabels: false,
+        },
+        hovermode: "closest",
+        height: 700,
+      }
+
+
+    Plotly.newPlot('display', data, layout);
+    Plotly.Plots.resize('display');
   }
 
   updatePlotData(g)
   {
     console.log('Updating plot data, showing field', g, '.');
-    Plotly.restyle('display', {z: [get_sub_arr(g)]});
+    var arr = get_SENR_arrays(g);
+    Plotly.restyle('display', {z: [arr['z']]});
   }
 
 } // SENRSimulation class
@@ -123,9 +171,11 @@ async function async_recurse_with_test(sleep_time, call, call_args, test, test_a
   async_recurse_with_test(sleep_time, call, call_args, test, test_args);
 }
 
-
-function get_sub_arr(g)
+function get_SENR_arrays(g)
 {
+
+  // TODO: redo all this neatly.
+
   var gfs_ptr_F64 = Module._get_gfs()/8;
   var gfs_size = Module._get_gfs_size();
   var gfs_arr = Module.HEAPF64.subarray( gfs_ptr_F64, gfs_ptr_F64 + gfs_size );
@@ -139,16 +189,44 @@ function get_sub_arr(g)
   var Npts2 = ny+2*NGHOSTS;
   var Npts3 = nz+2*NGHOSTS;
 
-  var sub_arr = new Array(ny);
-  for (var j=0; j<ny; j++) {
-    sub_arr[j] = new Array(nx);
-    for (var i=0; i<nx; i++) {
+  var x_arr = new Array(2*nx*ny);
+  var y_arr = new Array(2*nx*ny);
+  var z_arr = new Array(2*nx*ny);
+  var a_arr = new Array(2*nx*ny);
+  var b_arr = new Array(2*nx*ny);
+
+  for (var i=0; i<nx; i++) {
+    for (var j=0; j<ny; j++) {
       var k = 0;
-      var idx = (i+NGHOSTS) + Npts1*( (j+NGHOSTS) + Npts2*( (k+NGHOSTS) + Npts3*g ) );
-      sub_arr[j][i] = gfs_arr[idx];
+      var g_idx = (i+NGHOSTS) + Npts1*( (j+NGHOSTS) + Npts2*( (k+NGHOSTS) + Npts3*g ) );
+      var a_idx = i*ny + j;
+      var a_idx_refl = nx*ny + i*ny + j;
+      
+      var r = (i+1.0)/nx;
+      var theta = (j+1.0) * 1.0/ny * Math.PI;
+      var x_of_pt = r*Math.sin( theta );
+      var y_of_pt = r*Math.cos( theta );
+
+      a_arr[a_idx] = i;
+      b_arr[a_idx] = j;
+      x_arr[a_idx] = x_of_pt;
+      y_arr[a_idx] = y_of_pt;
+      z_arr[a_idx] = gfs_arr[g_idx];
+
+      a_arr[a_idx_refl] = -i;
+      b_arr[a_idx_refl] = -j;
+      x_arr[a_idx_refl] = -x_of_pt;
+      y_arr[a_idx_refl] = -y_of_pt;
+      z_arr[a_idx_refl] = gfs_arr[g_idx];
     }
   }
 
-  return sub_arr;
+  return {
+    a: a_arr,
+    b: b_arr,
+    x: x_arr,
+    y: y_arr,
+    z: z_arr,
+  };
 }
 
