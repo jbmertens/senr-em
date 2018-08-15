@@ -1,89 +1,37 @@
 <!DOCTYPE>
 <html>
 <head>
-  <script type="text/javascript" src="SENR.js"></script>
   <script
     src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
     integrity="sha256-3edrmyuQ0w65f8gfBsqowzjJe2iM6n0nKciPUp8y+7E="
     crossorigin="anonymous"></script>
   <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
-  
+  <script type="text/javascript" src="plots.js"></script>
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link rel="stylesheet" type="text/css" href="styles.css">
 </head>
 <body>
-  <fieldset>
-    # Steps:
-    <span id="sim_steps_indicator">10</span>
-    <input type="range" min="1" max="100" value="10" class="slider" id="sim_steps" onchange="javascript:$('#sim_steps_indicator').text(this.value);">
-    <button onclick="javascript:prep_sim();">Run Sim!</button>
-  </fieldset>
-  <fieldset>
-    Field No.:
-    <span id="field_num_indicator">7</span>
-    <input type="range" min="0" max="23" value="7" class="slider" id="field_num" onchange="javascript:$('#field_num_indicator').text(this.value);">
-    <button onclick="javascript:plot_sim_data();">Plot field!</button>
-  </fieldset>
-  <script type="text/javascript">
-    function prep_sim()
-    {
-      var steps = $('#sim_steps').val();
-      run_sim(steps);
-    }
-
-    function IDX (g, i, j, k)
-    {
-      var NGHOSTS = 3;
-      var Npts1 = 128+2*NGHOSTS;
-      var Npts2 = 32+2*NGHOSTS;
-      var Npts3 = 2+2*NGHOSTS;
-      return (i+NGHOSTS) + Npts1*( (j+NGHOSTS) + Npts2*( (k+NGHOSTS) + Npts3*g ) )
-    }
-
-    function get_sub_arr(gfs_arr, g)
-    {
-      var nx = 128;
-      var ny = 32;
-      var nz = 2;
-
-      var sub_arr = new Array(ny);
-      for (var j=0; j<ny; j++) {
-        sub_arr[j] = new Array(nx);
-        for (var i=0; i<nx; i++) {
-          var k = 0;
-          sub_arr[j][i] = gfs_arr[IDX(g,i,j,k)];
-        }
-      }
-
-      return sub_arr;
-    }
-
-    function run_sim(steps)
-    {
-      // Initialize GR sim
-      _init_sim();
-      // Run 1 step
-      _run_sim(steps);
-    }
-
-    function plot_sim_data()
-    {
-      var g = $('#field_num').val();
-
-      // get gfs data
-      var gfs_ptr_F64 = _get_gfs()/8;
-      var gfs_size = _get_gfs_size();
-      var gfs_arr = HEAPF64.subarray( gfs_ptr_F64, gfs_ptr_F64 + gfs_size );
-
-      var data = [
-        {
-          z: get_sub_arr(gfs_arr, g),
-          type: 'heatmapgl'
-        }
-      ];
-      Plotly.newPlot('display', data);
-    }
-
-  </script>
+  <div id="control">
+    <div id="pause">
+      <i class="material-icons">pause</i>
+    </div>
+    <div id="play">
+      <i class="material-icons">play_arrow</i>
+    </div>
+    <div id="counter">0</div>
+    <div id="field"></div>
+  </div>
   <div id="display"></div>
+  <script type="text/javascript">
+    var Module = { onRuntimeInitialized: function() {
+      $( document ).ready( function() {
+        // ...
+        var senr_sim = new SENRSimulation();
+
+      });
+    }};
+  </script>
+  <script type="text/javascript" src="SENR.js"></script>
 </body>
 
 </html>
