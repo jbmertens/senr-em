@@ -10,7 +10,8 @@ class SENRSimulation
     var self = this;
     self.is_running = false;
     self.n_steps_run = 0;
-
+    
+    // Menu of field types with their label codes
     self.fields = [
       { val: 0, text: "vetU0"} ,
       { val: 1, text: "vetU1"} ,
@@ -37,6 +38,7 @@ class SENRSimulation
       { val: 22, text: "betU1"} ,
       { val: 23, text: "betU2"} ,
     ];
+    // Default field to plot 'vetU0'
     self.fieldPlotted = 0;
 
     $('#control #play').on('click', function() {
@@ -88,6 +90,7 @@ class SENRSimulation
 
   showPlot(g)
   {
+    // This sets the plot type, settings and data input.
     var self = this;
     var arr = get_SENR_arrays(g);
 
@@ -102,14 +105,14 @@ class SENRSimulation
         minorgridcount: 9,
         type: 'linear',
         showticklabels: "none",
-        showgrid: false,
+        showgrid: true, // Original was false; wanted to see if true sheds light on graphing issue
       },
       baxis: {
         smoothing: 0,
         minorgridcount: 9,
         type: 'linear',
         showticklabels: "none",
-        showgrid: false,
+        showgrid: true, // Original was false; wanted to see if true sheds light on graphing issue
       }
     }, {
       z: arr['z'],
