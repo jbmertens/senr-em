@@ -73,11 +73,14 @@ class SENRSimulation
     var self = this;
     async_recurse_with_test(100, self.runStep, {'self': self}, self.isRunning, {'self': self});
   }
-
+  
   runStep(_self)
   {
+    // Iterate next step of the simulation
     var self = _self['self'];
+
     Module._run_sim(1);
+    // Add one to counter
     self.n_steps_run++;
     $('#counter').text(self.n_steps_run);
     self.updatePlotData(self.fieldPlotted);
@@ -107,12 +110,12 @@ class SENRSimulation
         showticklabels: "none",
         showgrid: true, // Original was false; wanted to see if true sheds light on graphing issue
       },
-      baxis: {
+      baxis: { // radially outward axis
         smoothing: 0,
         minorgridcount: 9,
         type: 'linear',
         showticklabels: "none",
-        showgrid: true, // Original was false; wanted to see if true sheds light on graphing issue
+        showgrid: false, // Original was false; wanted to see if true sheds light on graphing issue
       }
     }, {
       z: arr['z'],
@@ -124,23 +127,23 @@ class SENRSimulation
     var layout = {
         yaxis: {
           zeroline: false,
-          showgrid: false,
+          showgrid: true, // Original was false
           autorange: true,
           showline: false,
           ticks: '',
-          showticklabels: false,
+          showticklabels: true, // Original was false, gives numerical labels to y-axis grid
         },
         xaxis: {
           scaleratio: 1,
-          scaleanchor: "y",
-          showgrid: false,
+          scaleanchor: "y", // Scales x-axis to the size of the y-axis
+          showgrid: true, // Original was false
           autorange: true,
           showline: false,
           ticks: '',
-          showticklabels: false,
+          showticklabels: true, // Original was false, gives numerical labels to x-axis grid
         },
         hovermode: "closest",
-        height: 700,
+        height: 900, // Original was 700 and was slightly smaller than desired
       }
 
 
@@ -174,6 +177,7 @@ async function async_recurse_with_test(sleep_time, call, call_args, test, test_a
   async_recurse_with_test(sleep_time, call, call_args, test, test_args);
 }
 
+// Leave this for now till variables are understood
 function get_SENR_arrays(g)
 {
 
